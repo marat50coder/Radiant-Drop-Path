@@ -62,6 +62,22 @@ class AudioService {
     await _music.stop();
   }
 
+  /// Called when the app goes to background / is minimised.
+  /// Pauses the music without clearing the current track so it can resume.
+  Future<void> pauseForBackground() async {
+    try {
+      await _music.pause();
+    } catch (_) {}
+  }
+
+  /// Called when the app returns to the foreground.
+  Future<void> resumeFromBackground() async {
+    if (!musicEnabled || _currentMusicAsset == null) return;
+    try {
+      await _music.resume();
+    } catch (_) {}
+  }
+
   Future<void> playSfx(String asset, {double volume = 0.9}) async {
     if (!sfxEnabled) return;
     final effectiveVolume = (volume * sfxVolume).clamp(0.0, 1.0);

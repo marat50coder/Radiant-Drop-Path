@@ -25,7 +25,7 @@ class AssetPaths {
     return 'assets/bg_location_${safe}_asset.webp';
   }
 
-  static const String gameLogo = 'assets/Game_Name.webp';
+  static const String gameLogo = 'assets/Game_Name.png';
   static const String verticalLoading = 'assets/Vertical_Loading_Screen.webp';
   static const String horizontalLoading = 'assets/Horizontal_Loading_Screen.webp';
   static const String appIcon = 'assets/Icon.png';

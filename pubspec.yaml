@@ -1,5 +1,5 @@
 name: radiant_drop_path
-description: "Flux Chip Cascade - circuit puzzle automation game"
+description: "Radiant Drop Path - circuit puzzle automation game"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -53,8 +53,9 @@ dev_dependencies:
 
 flutter_launcher_icons:
   android: true
+  ios: false
   image_path: "assets/icon/icon_source.png"
-  adaptive_icon_background: "assets/icon/icon_source.png"
+  adaptive_icon_background: "#0A0E1A"
   adaptive_icon_foreground: "assets/icon/icon_source.png"
   min_sdk_android: 21
 

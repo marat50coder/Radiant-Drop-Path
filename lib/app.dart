@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'services/audio_service.dart';
 import 'theme/app_theme.dart';
 import 'screens/loading/loading_screen.dart';
 import 'screens/home/main_menu_screen.dart';
@@ -23,13 +24,46 @@ class Routes {
   static const guide = '/guide';
 }
 
-class FluxChipCascadeApp extends StatelessWidget {
-  const FluxChipCascadeApp({super.key});
+class RadiantDropPathApp extends StatefulWidget {
+  const RadiantDropPathApp({super.key});
+
+  @override
+  State<RadiantDropPathApp> createState() => _RadiantDropPathAppState();
+}
+
+class _RadiantDropPathAppState extends State<RadiantDropPathApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.detached:
+        AudioService.instance.pauseForBackground();
+        break;
+      case AppLifecycleState.resumed:
+        AudioService.instance.resumeFromBackground();
+        break;
+      case AppLifecycleState.inactive:
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flux Chip Cascade',
+      title: 'Radiant Drop Path',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       initialRoute: Routes.loading,
