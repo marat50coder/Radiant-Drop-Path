@@ -1,21 +1,54 @@
 platform :ios, '15.0'
 
 # --- Restore GoogleService-Info.plist on CI ---------------------------------
-# The plist is git-ignored (public repo). On CI, provide it as a base64-encoded
-# encrypted env var `GOOGLE_SERVICES_INFO_PLIST` (Codemagic → Environment
-# variables → Secure). This block runs when `pod install` parses the Podfile,
-# i.e. before Xcode resolves file references, so the archive step will find it.
+# The plist is git-ignored (public repo). On CI, provide the content as a
+# Secure env variable in Codemagic. Accepted variable names (first non-empty
+# wins): GOOGLE_SERVICES_INFO_PLIST, GOOGLE_SERVICES_INFO_PLIST_B64,
+# GOOGLE_SERVICE_INFO_PLIST. Value may be:
+#   - the raw plist XML (starts with `<?xml`), OR
+#   - a base64-encoded blob (whitespace ignored).
+# Missing env → `pod install` FAILS immediately with a clear message so the
+# error can't slip through to the Xcode archive step.
 require 'base64'
 _google_services_plist = File.expand_path('Runner/GoogleService-Info.plist', __dir__)
 unless File.exist?(_google_services_plist)
-  _b64 = ENV['GOOGLE_SERVICES_INFO_PLIST'].to_s.strip
-  if _b64.empty?
-    Pod::UI.warn "GoogleService-Info.plist is missing and GOOGLE_SERVICES_INFO_PLIST env var is not set. " \
-                 "Firebase-dependent builds will fail."
-  else
-    File.write(_google_services_plist, Base64.decode64(_b64))
-    Pod::UI.puts "Restored ios/Runner/GoogleService-Info.plist from GOOGLE_SERVICES_INFO_PLIST env var."
+  _raw = (
+    ENV['GOOGLE_SERVICES_INFO_PLIST'] ||
+    ENV['GOOGLE_SERVICES_INFO_PLIST_B64'] ||
+    ENV['GOOGLE_SERVICE_INFO_PLIST'] ||
+    ''
+  ).to_s.strip
+  if _raw.empty?
+    raise <<~ERR
+
+      ============================================================================
+      [Radiant Drop Path CI] Missing GoogleService-Info.plist
+      ----------------------------------------------------------------------------
+      The file ios/Runner/GoogleService-Info.plist is not in the repo (git-ignored
+      because the repository is public). Set it as a Secure environment variable
+      in Codemagic:
+
+          Variable name : GOOGLE_SERVICES_INFO_PLIST
+          Value         : base64-encoded plist  (or raw XML starting with <?xml)
+          Group         : any (e.g. `firebase`) — attach the group to the workflow.
+
+      Then re-run the build.
+      ============================================================================
+
+    ERR
   end
+  _content =
+    if _raw.start_with?('<?xml') || _raw.include?('<!DOCTYPE plist')
+      _raw
+    else
+      Base64.decode64(_raw.gsub(/\s+/, ''))
+    end
+  unless _content.include?('BUNDLE_ID') || _content.include?('<?xml')
+    raise "[Radiant Drop Path CI] GOOGLE_SERVICES_INFO_PLIST env var value does " \
+          "not look like a valid GoogleService-Info.plist (decoded #{_content.bytesize} bytes)."
+  end
+  File.write(_google_services_plist, _content)
+  Pod::UI.puts "[Radiant Drop Path] Restored ios/Runner/GoogleService-Info.plist (#{_content.bytesize} bytes)."
 end
 # ---------------------------------------------------------------------------
 
