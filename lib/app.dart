@@ -25,7 +25,13 @@ class Routes {
 }
 
 class RadiantDropPathApp extends StatefulWidget {
-  const RadiantDropPathApp({super.key});
+  const RadiantDropPathApp({super.key, this.initialRoute = Routes.loading});
+
+  /// Where the white game starts. Defaults to the loading screen (standalone
+  /// launch). When the flux gate reaches the game on the organic path it has
+  /// already served the loading UX, so it passes [Routes.mainMenu] to avoid a
+  /// double loading screen.
+  final String initialRoute;
 
   @override
   State<RadiantDropPathApp> createState() => _RadiantDropPathAppState();
@@ -66,7 +72,7 @@ class _RadiantDropPathAppState extends State<RadiantDropPathApp> with WidgetsBin
       title: 'Radiant Drop Path',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
-      initialRoute: Routes.loading,
+      initialRoute: widget.initialRoute,
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case Routes.loading:

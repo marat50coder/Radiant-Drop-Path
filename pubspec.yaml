@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.0.1+3
 
 environment:
   sdk: ^3.10.8
@@ -35,9 +35,24 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
-  shared_preferences: ^2.3.3
+  shared_preferences: ^2.5.5
   audioplayers: ^6.1.0
-  webview_flutter: ^4.10.0
+  webview_flutter: ^4.14.1
+
+  # ── Flux (gray) layer — attribution + push + WebView shell ──
+  appsflyer_sdk: ^6.18.0
+  app_tracking_transparency: ^2.0.7
+  firebase_core: ^4.12.1
+  firebase_messaging: ^16.4.3
+  firebase_app_check: ^0.4.5+2
+  # 7.1+ requires Xcode 26.1 for NWPath.isUltraConstrained.
+  connectivity_plus: '>=7.0.0 <7.1.0'
+  http: ^1.6.0
+  # 12.4+ calls an Xcode 26.1-only NSProcessInfo selector.
+  device_info_plus: 12.3.0
+  flutter_secure_storage: ^10.3.1
+  webview_flutter_wkwebview: ^3.26.0
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
@@ -55,6 +70,7 @@ flutter_launcher_icons:
   android: true
   ios: true
   remove_alpha_ios: true
+  background_color_ios: "#0A0E1A"
   image_path: "assets/icon/icon_source.png"
   adaptive_icon_background: "#0A0E1A"
   adaptive_icon_foreground: "assets/icon/icon_source.png"
@@ -70,6 +86,10 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # NSE + Firebase pods are wired via CocoaPods, not Swift Package Manager.
+  config:
+    enable-swift-package-manager: false
 
   assets:
     - assets/
