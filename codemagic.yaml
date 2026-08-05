@@ -1,0 +1,80 @@
+workflows:
+  ios-release:
+    name: iOS Release -> App Store (Radiant Drop Path)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    integrations:
+      # Имя App Store Connect API integration, которое настроено в Codemagic UI
+      # (Teams -> Integrations -> App Store Connect). Если у тебя оно называется
+      # иначе — поменяй строку ниже под своё имя.
+      app_store_connect: Radiant Drop Path App Store Connect
+
+    environment:
+      groups:
+        # Группа с сертификатом подписи / App Store Connect ключами
+        # (CERTIFICATE_PRIVATE_KEY и т.п.). Должна существовать в Codemagic UI.
+        - code-signing
+        # Группа с Firebase-секретом. Внутри должен лежать Secure-var:
+        #   GOOGLE_SERVICES_INFO_PLIST = base64 содержимого
+        #   ios/Runner/GoogleService-Info.plist
+        # (или GOOGLE_SERVICES_INFO_PLIST_B64 / GOOGLE_SERVICE_INFO_PLIST — Podfile
+        # принимает любое из трёх имён).
+        - firebase
+      flutter: 3.44.7
+      xcode: latest
+      cocoapods: default
+      vars:
+        BUNDLE_ID: com.radiantdrop.pathgame
+        NSE_BUNDLE_ID: com.radiantdrop.pathgame.NotificationService
+
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: ios-gray-part
+          include: true
+
+    scripts:
+      - name: Install Flutter dependencies
+        script: flutter pub get
+
+      - name: Install CocoaPods
+        # Podfile сам восстановит ios/Runner/GoogleService-Info.plist
+        # из env var GOOGLE_SERVICES_INFO_PLIST перед pod install.
+        script: pod install
+        working_directory: ios
+
+      - name: Code signing & Build IPA
+        script: |
+          keychain initialize
+
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --platform IOS \
+            --create
+          app-store-connect fetch-signing-files "$NSE_BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --platform IOS \
+            --create
+
+          keychain add-certificates
+
+          # Собираем Dart/Flutter без подписи первым — этот шаг может
+          # переписать Xcode-проект, поэтому profile-ы применяем ПОСЛЕ.
+          flutter build ios --release --no-codesign
+
+          xcode-project use-profiles
+          xcode-project build-ipa \
+            --workspace "ios/Runner.xcworkspace" \
+            --scheme "Runner"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: false
+        submit_to_app_store: false
