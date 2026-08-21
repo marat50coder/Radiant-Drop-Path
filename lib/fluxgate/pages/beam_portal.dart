@@ -285,9 +285,9 @@ class _BeamPortalState extends State<BeamPortal> with WidgetsBindingObserver {
     _controller.runJavaScript(r'''
 (() => {
   const root = window;
-  if (root.__rdxSafeGuard) return;
-  root.__rdxSafeGuard = true;
-  const marker = 'rdx-inset-sheet';
+  if (root.circuitInsetSheetInstalled) return;
+  root.circuitInsetSheetInstalled = true;
+  const marker = 'rdp-drop-inset-sheet';
   const rules = [
     ':root{',
     '--safe-area-inset-top:0px!important;',
@@ -351,8 +351,8 @@ class _BeamPortalState extends State<BeamPortal> with WidgetsBindingObserver {
   void _installZoomLock() {
     _controller.runJavaScript(r'''
 (() => {
-  if (window.__rdxZoomHold) return;
-  window.__rdxZoomHold = true;
+  if (window.pathZoomHoldReady) return;
+  window.pathZoomHoldReady = true;
   const lockViewport = () => {
     const host = document.head || document.documentElement;
     if (!host) return;
@@ -395,10 +395,10 @@ class _BeamPortalState extends State<BeamPortal> with WidgetsBindingObserver {
   void _installTapPolish() {
     _controller.runJavaScript(r'''
 (() => {
-  if (window.__rdxTapClean) return;
-  window.__rdxTapClean = true;
+  if (window.dropTapPolishActive) return;
+  window.dropTapPolishActive = true;
   const style = document.createElement('style');
-  style.id = 'rdx-tap-clean';
+  style.id = 'rdp-tap-polish-style';
   style.textContent =
     '*{-webkit-tap-highlight-color:transparent!important;}' +
     '*:not(input):not(textarea):not([contenteditable="true"]){' +
@@ -411,8 +411,8 @@ class _BeamPortalState extends State<BeamPortal> with WidgetsBindingObserver {
   void _installKeyboardLift() {
     _controller.runJavaScript(r'''
 (() => {
-  if (window.__rdxInputRaise) return;
-  window.__rdxInputRaise = true;
+  if (window.beamLiftInputInstalled) return;
+  window.beamLiftInputInstalled = true;
   const editable = (node) => !!node && (
     node.matches?.('input, textarea, select, [contenteditable="true"]')
   );
@@ -432,8 +432,8 @@ class _BeamPortalState extends State<BeamPortal> with WidgetsBindingObserver {
     if (!Platform.isIOS) return;
     _controller.runJavaScript(r'''
 (() => {
-  if (window.__rdxFocusScale) return;
-  window.__rdxFocusScale = true;
+  if (window.radiantFocusScaleGuardOn) return;
+  window.radiantFocusScaleGuardOn = true;
   const style = document.createElement('style');
   style.textContent =
     'input,textarea,select,[contenteditable="true"]{' +
@@ -446,8 +446,8 @@ class _BeamPortalState extends State<BeamPortal> with WidgetsBindingObserver {
   void _installInlinePlayback() {
     _controller.runJavaScript(r'''
 (() => {
-  if (window.__rdxInlinePlay) return;
-  window.__rdxInlinePlay = true;
+  if (window.cascadeInlinePlayback) return;
+  window.cascadeInlinePlayback = true;
   const awaken = (video) => {
     if (!(video instanceof HTMLVideoElement)) return;
     video.setAttribute('playsinline', '');

@@ -68,8 +68,8 @@ class _NoLinkScreenState extends State<NoLinkScreen> {
     final media = MediaQuery.of(context);
     final landscape = media.orientation == Orientation.landscape;
     final background = landscape
-        ? 'assets/Horizontal_Nowifi_Screen.webp'
-        : 'assets/Vertical_Nowifi_Screen.webp';
+        ? 'assets/link_absent_landscape.webp'
+        : 'assets/link_absent_portrait.webp';
     final width = landscape
         ? (media.size.width * 0.40).clamp(300.0, 520.0)
         : (media.size.width * 0.66).clamp(260.0, 420.0);

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'drop_vault.dart';
+import 'trace_signals.dart' show fluxTrace;
 
 @pragma('vm:entry-point')
 Future<void> rdpBackgroundMessage(RemoteMessage _) async {}
@@ -35,6 +36,11 @@ class PulseBeacon {
       onTimeout: () => null,
     );
     final initialUrl = initial == null ? null : _extract(initial.data);
+    if (initial != null) {
+      fluxTrace(
+        () => '[RDX.PUSH] initial data=${initial.data} url=$initialUrl',
+      );
+    }
     if (initialUrl != null) await _vault.stashPushUrl(initialUrl);
 
     FirebaseMessaging.onBackgroundMessage(rdpBackgroundMessage);
@@ -49,6 +55,9 @@ class PulseBeacon {
     });
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
       final url = _extract(message.data);
+      fluxTrace(
+        () => '[RDX.PUSH] opened data=${message.data} url=$url',
+      );
       if (url == null) return;
       final callback = onDestination;
       if (callback == null) {
@@ -61,18 +70,31 @@ class PulseBeacon {
     _token = await messaging.getToken();
   }
 
+  /// Extracts the destination URL from a push payload. Checks a broad set of
+  /// keys — the config backend and OneLink/AppsFlyer publish under different
+  /// names depending on channel. First match wins. Only http(s) are accepted;
+  /// non-URL strings (deep_link_value tokens, campaign labels) are skipped
+  /// so we never navigate to a garbage URL.
   String? _extract(Map<String, dynamic> payload) {
     for (final key in const <String>[
-      'deep_link',
-      'target',
-      'url',
-      'deeplink',
-      'link',
+      // config backend / partner
+      'destination', 'target_url', 'target', 'deep_link', 'deeplink',
+      'redirect_url', 'redirect', 'url', 'link', 'href',
+      // AppsFlyer OneLink / Firebase
+      'af_dp', 'af_web_dp', 'af_deep_link', 'af_web_deep_link',
+      'gcm.notification.link', 'notification_link',
     ]) {
       final value = payload[key];
-      if (value is String && value.trim().isNotEmpty) return value.trim();
+      if (value is String) {
+        final trimmed = value.trim();
+        if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+          return trimmed;
+        }
+      }
     }
-    for (final container in const <String>['payload', 'data']) {
+    for (final container in const <String>[
+      'payload', 'data', 'gcm.notification', 'aps',
+    ]) {
       final nested = payload[container];
       if (nested is Map) {
         final found = _extract(Map<String, dynamic>.from(nested));

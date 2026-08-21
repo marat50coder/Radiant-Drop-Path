@@ -115,22 +115,25 @@ class FlowConductor {
     if (!await probe.hasInterface()) {
       return const OfflineTarget(returnToNative: false);
     }
+    // A push tap always wins — it's an explicit destination the user asked for
+    // and must not be overridden by whatever the backend is serving now.
     final pending = await vault.consumePushUrl();
     if (pending != null && pending.isNotEmpty) {
       progress(1);
       return PortalTarget(pending);
     }
+    // Refresh the config on every returning-portal launch so a backend URL
+    // change is picked up immediately. The cached URL is only used as an
+    // offline fallback if the request fails (never as a "fast path" that would
+    // pin the app to a stale endpoint).
     final cached = await vault.savedUrl();
-    if (cached != null && !vault.cachedUrlExpired) {
-      progress(1);
-      return PortalTarget(cached);
-    }
 
     await Future.wait<void>(<Future<void>>[
       beacon.boot(),
       attribution.start(),
     ]);
     if (!await probe.canReachNetwork()) {
+      if (cached != null && cached.isNotEmpty) return PortalTarget(cached);
       return const OfflineTarget(returnToNative: false);
     }
     progress(0.62);
@@ -138,7 +141,7 @@ class FlowConductor {
     final reply = await _requestConfig();
     progress(1);
     if (reply.hasDestination) return PortalTarget(reply.url!);
-    if (cached != null) return PortalTarget(cached);
+    if (cached != null && cached.isNotEmpty) return PortalTarget(cached);
     return const OfflineTarget(returnToNative: false);
   }
 

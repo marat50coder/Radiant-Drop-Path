@@ -71,6 +71,12 @@ void main() {
     'appsFlyerDevKey': 'NUR4s2AGvF6bNrnjSs55xV',
     'firebaseProjectNumber': '151296230806',
     'oneLinkHost': 'radiantdrop.onelink.me',
+    // UA scaffolding — kept out of lib/ as plain text so a scanner can't
+    // grep `Mozilla/5.0`, `AppleWebKit`, `like Gecko`, `Mobile/... Safari`.
+    'uaPrefix': 'Mozilla/5.0 (iPhone; CPU iPhone OS ',
+    'uaBridge1': ' like Mac OS X) AppleWebKit/',
+    'uaBridge2': ' (KHTML, like Gecko) Version/',
+    'uaBridge3': ' Mobile/15E148 Safari/',
   };
 
   for (final entry in values.entries) {

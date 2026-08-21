@@ -56,100 +56,117 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ResourceChip(icon: Icons.diamond, color: AppColors.accentCyan, value: save.crystals),
-                      ResourceChip(icon: Icons.memory, color: AppColors.accentGold, value: save.microParts),
-                      ResourceChip(icon: Icons.developer_board, color: AppColors.accentMagenta, value: save.processors),
-                    ],
-                  ),
-                  const Spacer(flex: 3),
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(color: AppColors.accentCyan.withValues(alpha: 0.35), blurRadius: 50, spreadRadius: 4),
-                      ],
+              // ScrollView + IntrinsicHeight: when the viewport is tall enough
+              // (portrait) the Spacers distribute space as before; when it's
+              // shorter than the intrinsic column height (landscape) the whole
+              // menu becomes vertically scrollable instead of clipping.
+              child: LayoutBuilder(
+                builder: (context, constraints) => SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ResourceChip(icon: Icons.diamond, color: AppColors.accentCyan, value: save.crystals),
+                              ResourceChip(icon: Icons.memory, color: AppColors.accentGold, value: save.microParts),
+                              ResourceChip(icon: Icons.developer_board, color: AppColors.accentMagenta, value: save.processors),
+                            ],
+                          ),
+                          const Spacer(flex: 3),
+                          const SizedBox(height: 12),
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(color: AppColors.accentCyan.withValues(alpha: 0.35), blurRadius: 50, spreadRadius: 4),
+                              ],
+                            ),
+                            child: Image.asset(AssetPaths.gameLogo, width: 260),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'DESIGN IT · LAUNCH IT · WATCH IT CASCADE',
+                            style: TextStyle(
+                              color: AppColors.accentCyan.withValues(alpha: 0.85),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.6,
+                            ),
+                          ),
+                          const Spacer(flex: 4),
+                          const SizedBox(height: 16),
+                          _HeroPlayButton(
+                            subtitle: '${LevelGenerator.totalLevels} levels of cascade puzzles',
+                            onPressed: () => _go(Routes.levelSelect),
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _MenuTile(
+                                  label: 'ENDLESS',
+                                  subtitle: 'Infinite run',
+                                  icon: Icons.all_inclusive,
+                                  accent: AppColors.accentCyan,
+                                  onPressed: () => _go(Routes.endless),
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: _MenuTile(
+                                  label: 'LAB',
+                                  subtitle: 'Experiment',
+                                  icon: Icons.science_outlined,
+                                  accent: AppColors.accentMagenta,
+                                  onPressed: () => _go(Routes.lab),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _MenuTile(
+                                  label: 'GUIDE',
+                                  subtitle: 'Field manual',
+                                  icon: Icons.menu_book_outlined,
+                                  accent: AppColors.accentGold,
+                                  onPressed: () => _go(Routes.guide),
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: _MenuTile(
+                                  label: 'SETTINGS',
+                                  subtitle: 'Tune & audio',
+                                  icon: Icons.settings_outlined,
+                                  accent: AppColors.success,
+                                  onPressed: () => _go(Routes.settings),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Spacer(flex: 2),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _footerLink(context, 'Privacy Policy', 'https://radiantdroppath.com/privacy-policy.html', true),
+                              const SizedBox(width: 18),
+                              Container(width: 1, height: 12, color: AppColors.textSecondary.withValues(alpha: 0.4)),
+                              const SizedBox(width: 18),
+                              _footerLink(context, 'Support', 'https://radiantdroppath.com/support.html', false),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Image.asset(AssetPaths.gameLogo, width: 260),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'DESIGN IT · LAUNCH IT · WATCH IT CASCADE',
-                    style: TextStyle(
-                      color: AppColors.accentCyan.withValues(alpha: 0.85),
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.6,
-                    ),
-                  ),
-                  const Spacer(flex: 4),
-                  _HeroPlayButton(
-                    subtitle: '${LevelGenerator.totalLevels} levels of cascade puzzles',
-                    onPressed: () => _go(Routes.levelSelect),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _MenuTile(
-                          label: 'ENDLESS',
-                          subtitle: 'Infinite run',
-                          icon: Icons.all_inclusive,
-                          accent: AppColors.accentCyan,
-                          onPressed: () => _go(Routes.endless),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: _MenuTile(
-                          label: 'LAB',
-                          subtitle: 'Experiment',
-                          icon: Icons.science_outlined,
-                          accent: AppColors.accentMagenta,
-                          onPressed: () => _go(Routes.lab),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _MenuTile(
-                          label: 'GUIDE',
-                          subtitle: 'Field manual',
-                          icon: Icons.menu_book_outlined,
-                          accent: AppColors.accentGold,
-                          onPressed: () => _go(Routes.guide),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: _MenuTile(
-                          label: 'SETTINGS',
-                          subtitle: 'Tune & audio',
-                          icon: Icons.settings_outlined,
-                          accent: AppColors.success,
-                          onPressed: () => _go(Routes.settings),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(flex: 2),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _footerLink(context, 'Privacy Policy', 'https://radiantdroppath.com/privacy-policy.html', true),
-                      const SizedBox(width: 18),
-                      Container(width: 1, height: 12, color: AppColors.textSecondary.withValues(alpha: 0.4)),
-                      const SizedBox(width: 18),
-                      _footerLink(context, 'Support', 'https://radiantdroppath.com/support.html', false),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ),
           ),

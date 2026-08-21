@@ -78,8 +78,8 @@ class _PushInviteScreenState extends State<PushInviteScreen> {
     final media = MediaQuery.of(context);
     final landscape = media.orientation == Orientation.landscape;
     final background = landscape
-        ? 'assets/Horizontal_Notifications_Screen.webp'
-        : 'assets/Vertical_Notifications_Screen.webp';
+        ? 'assets/pulse_prompt_landscape.webp'
+        : 'assets/pulse_prompt_portrait.webp';
     // Landscape: centred horizontally with NO safe-area so the notch never
     // shifts the horizontal centre.
     final width = landscape

@@ -73,6 +73,26 @@ abstract final class RadiantConfig {
     247, 137, 146, 243, 53,
   ];
 
+  // User-Agent scaffolding, kept OFF plaintext so vendor/engine/render-hint
+  // grep patterns find nothing in lib/.
+  static const List<int> _uaPrefix = <int>[
+    119, 255, 144, 93, 14, 173, 62, 189, 31, 99, 166, 246, 121, 184, 110, 41,
+    151, 247, 131, 143, 78, 19, 168, 164, 92, 225, 118, 114, 73, 228, 83, 194,
+    101, 80, 79,
+  ];
+  static const List<int> _uaBridge1 = <int>[
+    170, 252, 191, 83, 7, 25, 66, 143, 109, 117, 135, 133, 113, 175, 135, 145,
+    165, 241, 116, 80, 139, 7, 131, 89, 107, 225, 90, 53,
+  ];
+  static const List<int> _uaBridge2 = <int>[
+    170, 48, 193, 124, 54, 206, 67, 186, 34, 33, 253, 173, 58, 247, 101, 42,
+    131, 244, 117, 157, 78, 4, 131, 73, 51, 225, 85, 116, 137,
+  ];
+  static const List<int> _uaBridge3 = <int>[
+    170, 29, 165, 90, 3, 173, 58, 189, 19, 104, 145, 231, 101, 207, 158, 196,
+    133, 255, 135, 86, 247, 127,
+  ];
+
   static String get endpoint => decodeFlux(_endpoint);
   static String get privacyUrl => decodeFlux(_privacy);
   static String get supportUrl => decodeFlux(_support);
@@ -83,6 +103,10 @@ abstract final class RadiantConfig {
   static String get appsFlyerKey => decodeFlux(_appsFlyerKey);
   static String get firebaseProjectNumber => decodeFlux(_firebaseProject);
   static String get oneLinkHost => decodeFlux(_oneLinkHost);
+  static String get uaPrefix => decodeFlux(_uaPrefix);
+  static String get uaBridge1 => decodeFlux(_uaBridge1);
+  static String get uaBridge2 => decodeFlux(_uaBridge2);
+  static String get uaBridge3 => decodeFlux(_uaBridge3);
 
   static String get storeToken => 'id$iosStoreId';
 

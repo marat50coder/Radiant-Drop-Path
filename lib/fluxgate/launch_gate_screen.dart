@@ -186,8 +186,8 @@ class _LaunchGateScreenState extends State<LaunchGateScreen> {
     final orientation = MediaQuery.of(context).orientation;
     final isLandscape = orientation == Orientation.landscape;
     final asset = isLandscape
-        ? 'assets/Horizontal_Loading_Screen.png'
-        : 'assets/Vertical_Loading_Screen.png';
+        ? 'assets/circuit_bootup_landscape.png'
+        : 'assets/circuit_bootup_portrait.png';
     final screenW = MediaQuery.of(context).size.width;
 
     return Scaffold(

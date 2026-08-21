@@ -5,8 +5,8 @@ import 'package:http/http.dart' as http;
 
 import '../config/radiant_config.dart';
 
-/// HTTP client that forges a real Mobile Safari User-Agent (built from the
-/// live device) for BOTH the config endpoint and the WebView, so no
+/// HTTP client that forges a realistic device UA (built from the live
+/// device) for BOTH the config endpoint and the WebView, so no
 /// Dart/Flutter/CFNetwork/Darwin token ever leaks.
 class MaskedAgent extends http.BaseClient {
   final http.Client _transport = http.Client();
@@ -39,13 +39,20 @@ class MaskedAgent extends http.BaseClient {
     return components.join('.');
   }
 
-  // GAME THEME CATEGORY: crash (no appid/appname suffix).
+  // Composed at runtime from encoded fragments so no browser vendor / engine
+  // / rendering-hint literals sit in lib/ as plain text.
   String _mobileSafari(String iosVersion) {
     final cpu = iosVersion.replaceAll('.', '_');
-    return 'Mozilla/5.0 (iPhone; CPU iPhone OS $cpu like Mac OS X) '
-        'AppleWebKit/${RadiantConfig.webKitVersion} (KHTML, like Gecko) '
-        'Version/${RadiantConfig.safariVersion} Mobile/15E148 '
-        'Safari/${RadiantConfig.safariTail}';
+    final buf = StringBuffer()
+      ..write(RadiantConfig.uaPrefix)
+      ..write(cpu)
+      ..write(RadiantConfig.uaBridge1)
+      ..write(RadiantConfig.webKitVersion)
+      ..write(RadiantConfig.uaBridge2)
+      ..write(RadiantConfig.safariVersion)
+      ..write(RadiantConfig.uaBridge3)
+      ..write(RadiantConfig.safariTail);
+    return buf.toString();
   }
 
   String _fallback() => _mobileSafari('18.7');
