@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Firebase config files must not be committed (public repo). Materialized
+# from a Secure env var in Codemagic via the Podfile pre-install script.
+ios/Runner/GoogleService-Info.plist
+**/GoogleService-Info.plist

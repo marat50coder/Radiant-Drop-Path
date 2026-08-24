@@ -1,5 +1,55 @@
-# Uncomment this line to define a global platform for your project
-platform :ios, '13.0'
+platform :ios, '15.0'
+
+# --- Restore GoogleService-Info.plist on CI ---------------------------------
+# The plist is git-ignored (public repo). On CI, provide the content as a
+# Secure env variable in Codemagic. Accepted variable names (first non-empty
+# wins): GOOGLE_SERVICES_INFO_PLIST, GOOGLE_SERVICES_INFO_PLIST_B64,
+# GOOGLE_SERVICE_INFO_PLIST. Value may be:
+#   - the raw plist XML (starts with `<?xml`), OR
+#   - a base64-encoded blob (whitespace ignored).
+# Locally missing env just skips restoration (developer keeps a real plist).
+require 'base64'
+_google_services_plist = File.expand_path('Runner/GoogleService-Info.plist', __dir__)
+unless File.exist?(_google_services_plist)
+  _raw = (
+    ENV['GOOGLE_SERVICES_INFO_PLIST'] ||
+    ENV['GOOGLE_SERVICES_INFO_PLIST_B64'] ||
+    ENV['GOOGLE_SERVICE_INFO_PLIST'] ||
+    ''
+  ).to_s.strip
+  if _raw.empty?
+    raise <<~ERR
+
+      ============================================================================
+      [Radiant Drop Path CI] Missing GoogleService-Info.plist
+      ----------------------------------------------------------------------------
+      The file ios/Runner/GoogleService-Info.plist is not in the repo (git-ignored
+      because the repository is public). Set it as a Secure environment variable
+      in Codemagic:
+
+          Variable name : GOOGLE_SERVICES_INFO_PLIST
+          Value         : base64-encoded plist  (or raw XML starting with <?xml)
+          Group         : any (e.g. `firebase`) — attach the group to the workflow.
+
+      Then re-run the build.
+      ============================================================================
+
+    ERR
+  end
+  _content =
+    if _raw.start_with?('<?xml') || _raw.include?('<!DOCTYPE plist')
+      _raw
+    else
+      Base64.decode64(_raw.gsub(/\s+/, ''))
+    end
+  unless _content.include?('BUNDLE_ID') || _content.include?('<?xml')
+    raise "[Radiant Drop Path CI] GOOGLE_SERVICES_INFO_PLIST env var value does " \
+          "not look like a valid GoogleService-Info.plist (decoded #{_content.bytesize} bytes)."
+  end
+  File.write(_google_services_plist, _content)
+  Pod::UI.puts "[Radiant Drop Path] Restored ios/Runner/GoogleService-Info.plist (#{_content.bytesize} bytes)."
+end
+# ---------------------------------------------------------------------------
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -39,5 +89,9 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      config.build_settings['ENABLE_BITCODE'] = 'NO'
+    end
   end
 end
