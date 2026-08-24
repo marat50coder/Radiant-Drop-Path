@@ -42,9 +42,14 @@ dependencies:
   # ── Flux (gray) layer — attribution + push + WebView shell ──
   appsflyer_sdk: ^6.18.0
   app_tracking_transparency: ^2.0.7
-  firebase_core: ^4.12.1
-  firebase_messaging: ^16.4.3
-  firebase_app_check: ^0.4.5+2
+  # Hard-pinned: firebase_core 4.13+ ships a Swift-only FLTFirebaseCorePlugin
+  # that collides with the ObjC GeneratedPluginRegistrant, and
+  # firebase_app_check 0.4.6 declares `extension FlutterError: Error {}` which
+  # is now redundant on modern Flutter SDKs and fails to compile. Keep this
+  # trio pinned until upstream ships coordinated fixes.
+  firebase_core: 4.12.1
+  firebase_messaging: 16.4.3
+  firebase_app_check: 0.4.5+2
   # 7.1+ requires Xcode 26.1 for NWPath.isUltraConstrained.
   connectivity_plus: '>=7.0.0 <7.1.0'
   http: ^1.6.0
