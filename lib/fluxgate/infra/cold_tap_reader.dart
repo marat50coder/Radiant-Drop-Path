@@ -13,8 +13,13 @@ class ColdTapReader {
     try {
       final preferences = await SharedPreferences.getInstance();
       final value = preferences.getString(_dartKey)?.trim();
-      if (value == null || value.isEmpty) return null;
+      // Always remove — a stale non-URL token from an earlier build must not
+      // linger and get replayed on every cold start.
       await preferences.remove(_dartKey);
+      if (value == null || value.isEmpty) return null;
+      if (!value.startsWith('http://') && !value.startsWith('https://')) {
+        return null;
+      }
       return value;
     } catch (_) {
       return null;

@@ -51,9 +51,16 @@ class DropVault {
   }
 
   Future<void> stashPushUrl(String url) async {
-    if (url.trim().isEmpty) return;
+    final trimmed = url.trim();
+    if (trimmed.isEmpty) return;
+    // Guard against stashing non-URL tokens (`deep_link_test`, campaign
+    // labels, etc.) so a poorly-formed payload can never end up steering the
+    // portal to a garbage / stale destination on the next launch.
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+      return;
+    }
     try {
-      await _secure.write(key: _pendingUrlKey, value: url.trim());
+      await _secure.write(key: _pendingUrlKey, value: trimmed);
     } catch (_) {}
   }
 
@@ -61,7 +68,15 @@ class DropVault {
     try {
       final value = await _secure.read(key: _pendingUrlKey);
       if (value != null) await _secure.delete(key: _pendingUrlKey);
-      return value;
+      if (value == null) return null;
+      final trimmed = value.trim();
+      if (trimmed.isEmpty) return null;
+      // A stale non-URL from an earlier build (before validation existed)
+      // must never make it to the WebView.
+      if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+        return null;
+      }
+      return trimmed;
     } catch (_) {
       return null;
     }

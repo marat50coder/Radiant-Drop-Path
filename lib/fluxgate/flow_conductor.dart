@@ -115,10 +115,22 @@ class FlowConductor {
     if (!await probe.hasInterface()) {
       return const OfflineTarget(returnToNative: false);
     }
+    // Boot beacon *before* consuming the push URL. FirebaseMessaging's
+    // getInitialMessage() is polled inside boot(), and if SceneDelegate
+    // missed the cold-start payload (unknown key or the app was launched
+    // from a background tap that iOS routed through the FCM proxy) that's
+    // where the push URL first lands in the vault. Consuming beforehand
+    // would race past a valid push URL and silently fall back to the
+    // (possibly stale test) cached URL.
+    await Future.wait<void>(<Future<void>>[
+      beacon.boot(),
+      attribution.start(),
+    ]);
     // A push tap always wins — it's an explicit destination the user asked for
     // and must not be overridden by whatever the backend is serving now.
     final pending = await vault.consumePushUrl();
     if (pending != null && pending.isNotEmpty) {
+      fluxTrace(() => '[RDX.FLOW] returningPortal: push wins → $pending');
       progress(1);
       return PortalTarget(pending);
     }
@@ -128,10 +140,6 @@ class FlowConductor {
     // pin the app to a stale endpoint).
     final cached = await vault.savedUrl();
 
-    await Future.wait<void>(<Future<void>>[
-      beacon.boot(),
-      attribution.start(),
-    ]);
     if (!await probe.canReachNetwork()) {
       if (cached != null && cached.isNotEmpty) return PortalTarget(cached);
       return const OfflineTarget(returnToNative: false);
