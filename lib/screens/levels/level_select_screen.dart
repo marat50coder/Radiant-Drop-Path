@@ -107,6 +107,15 @@ class _LevelButtonState extends State<_LevelButton> {
     final stars = SaveService.instance.levelStars[widget.levelId] ?? 0;
     final unlocked = widget.unlocked;
     final completed = stars > 0;
+    final mastered = stars >= 3;
+    final borderColor = mastered
+        ? AppColors.accentGold
+        : (unlocked
+            ? AppColors.accentCyan.withValues(alpha: completed ? 0.9 : 0.6)
+            : AppColors.gridLine);
+    final glowColor = mastered
+        ? AppColors.accentGold
+        : AppColors.accentCyan;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTapDown: unlocked ? (_) => setState(() => _pressed = true) : null,
@@ -121,46 +130,120 @@ class _LevelButtonState extends State<_LevelButton> {
       child: AnimatedScale(
         scale: _pressed ? 0.93 : 1.0,
         duration: const Duration(milliseconds: 90),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+        child: SizedBox(
           width: 62,
           height: 68,
-          decoration: BoxDecoration(
-            gradient: completed
-                ? LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [AppColors.accentCyan.withValues(alpha: 0.28), AppColors.accentMagenta.withValues(alpha: 0.22)],
-                  )
-                : null,
-            color: completed ? null : (unlocked ? AppColors.panelLight : Colors.black.withValues(alpha: 0.35)),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: unlocked ? AppColors.accentCyan.withValues(alpha: completed ? 0.9 : 0.6) : AppColors.gridLine,
-              width: completed ? 1.6 : 1,
-            ),
-            boxShadow: unlocked && !_pressed
-                ? [BoxShadow(color: AppColors.accentCyan.withValues(alpha: completed ? 0.35 : 0.15), blurRadius: 12, offset: const Offset(0, 4))]
-                : const [],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Stack(
+            clipBehavior: Clip.none,
             children: [
-              if (unlocked)
-                Text('${widget.levelId}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: AppColors.textPrimary))
-              else
-                const Icon(Icons.lock, size: 18, color: AppColors.textSecondary),
-              const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(3, (i) {
-                  return Icon(
-                    Icons.star_rounded,
-                    size: 12,
-                    color: i < stars ? AppColors.accentGold : AppColors.gridLine,
-                  );
-                }),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                width: 62,
+                height: 68,
+                decoration: BoxDecoration(
+                  gradient: mastered
+                      ? LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.accentGold.withValues(alpha: 0.32),
+                            AppColors.accentGold.withValues(alpha: 0.14),
+                          ],
+                        )
+                      : completed
+                          ? LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                AppColors.accentCyan.withValues(alpha: 0.28),
+                                AppColors.accentMagenta.withValues(alpha: 0.22),
+                              ],
+                            )
+                          : null,
+                  color: completed
+                      ? null
+                      : (unlocked ? AppColors.panelLight : Colors.black.withValues(alpha: 0.35)),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: borderColor,
+                    width: mastered ? 1.8 : (completed ? 1.6 : 1),
+                  ),
+                  boxShadow: unlocked && !_pressed
+                      ? [
+                          BoxShadow(
+                            color: glowColor.withValues(
+                              alpha: mastered ? 0.5 : (completed ? 0.35 : 0.15),
+                            ),
+                            blurRadius: mastered ? 16 : 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ]
+                      : const [],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (unlocked)
+                      Text(
+                        '${widget.levelId}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                          color: mastered
+                              ? AppColors.accentGold
+                              : AppColors.textPrimary,
+                        ),
+                      )
+                    else
+                      const Icon(Icons.lock, size: 18, color: AppColors.textSecondary),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(3, (i) {
+                        return Icon(
+                          Icons.star_rounded,
+                          size: 12,
+                          color: i < stars ? AppColors.accentGold : AppColors.gridLine,
+                        );
+                      }),
+                    ),
+                  ],
+                ),
               ),
+              if (mastered)
+                Positioned(
+                  top: -6,
+                  right: -6,
+                  child: Container(
+                    width: 22,
+                    height: 22,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFFFFD86B), Color(0xFFC68824)],
+                      ),
+                      border: Border.all(
+                        color: AppColors.background,
+                        width: 1.4,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.accentGold.withValues(alpha: 0.55),
+                          blurRadius: 10,
+                          spreadRadius: -1,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.workspace_premium_rounded,
+                      size: 14,
+                      color: Color(0xFF3A2405),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
