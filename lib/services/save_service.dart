@@ -127,6 +127,43 @@ class SaveService {
 
   int get totalStars => levelStars.values.fold(0, (a, b) => a + b);
 
+  // ── Player level / XP progression ─────────────────────────────────────────
+  // Curve: level `n` requires `100 + (n-1) * 25` XP to reach `n+1`. So level
+  // ramp is 100 → 125 → 150 → 175 …  Cumulative XP for level `n` (1-indexed) is
+  //   sum_{k=1..n-1} (100 + (k-1)*25) = (n-1) * (200 + (n-2)*25) / 2 * … see
+  // helpers below.
+
+  /// Cumulative XP needed to *reach* [level] (level 1 → 0 xp, level 2 → 100,
+  /// level 3 → 225, level 4 → 375, …).
+  int _xpAtLevel(int level) {
+    if (level <= 1) return 0;
+    final k = level - 1;
+    return (100 * k) + (25 * k * (k - 1) ~/ 2);
+  }
+
+  /// Current player level derived from cumulative [xp]. Clamped to `[1, 999]`.
+  int get playerLevel {
+    var lvl = 1;
+    while (lvl < 999 && xp >= _xpAtLevel(lvl + 1)) {
+      lvl++;
+    }
+    return lvl;
+  }
+
+  /// XP earned since reaching [playerLevel] (i.e. XP into the current bar).
+  int get xpIntoLevel => xp - _xpAtLevel(playerLevel);
+
+  /// Total XP required to go from [playerLevel] to `playerLevel + 1`.
+  int get xpForCurrentLevel =>
+      _xpAtLevel(playerLevel + 1) - _xpAtLevel(playerLevel);
+
+  /// Progress inside the current level bar, in `[0.0, 1.0]`.
+  double get levelProgress {
+    final span = xpForCurrentLevel;
+    if (span <= 0) return 0;
+    return (xpIntoLevel / span).clamp(0.0, 1.0);
+  }
+
   Future<void> setMusicEnabled(bool v) async {
     musicEnabled = v;
     await _prefs.setBool('musicEnabled', v);

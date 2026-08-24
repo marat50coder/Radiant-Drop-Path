@@ -6,6 +6,7 @@ import '../../services/save_service.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/asset_paths.dart';
 import '../../utils/sound_paths.dart';
+import '../../widgets/player_level_badge.dart';
 import '../../widgets/resource_chip.dart';
 import '../webview/simple_webview_screen.dart';
 
@@ -66,6 +67,8 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                       ResourceChip(icon: Icons.developer_board, color: AppColors.accentMagenta, value: save.processors),
                     ],
                   ),
+                  const SizedBox(height: 10),
+                  PlayerLevelBadge(save: save),
                   const Spacer(flex: 3),
                   DecoratedBox(
                     decoration: BoxDecoration(
@@ -140,13 +143,32 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                   ),
                   const Spacer(flex: 2),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _footerLink(context, 'Privacy Policy', 'https://radiantdroppath.com/privacy-policy.html', true),
-                      const SizedBox(width: 18),
-                      Container(width: 1, height: 12, color: AppColors.textSecondary.withValues(alpha: 0.4)),
-                      const SizedBox(width: 18),
-                      _footerLink(context, 'Support', 'https://radiantdroppath.com/support.html', false),
+                      Expanded(
+                        child: _FooterButton(
+                          label: 'Privacy Policy',
+                          icon: Icons.shield_outlined,
+                          accent: AppColors.accentCyan,
+                          onPressed: () => _openLegal(
+                            'Privacy Policy',
+                            'https://radiantdroppath.com/privacy-policy.html',
+                            true,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _FooterButton(
+                          label: 'Support',
+                          icon: Icons.support_agent_outlined,
+                          accent: AppColors.accentGold,
+                          onPressed: () => _openLegal(
+                            'Support',
+                            'https://radiantdroppath.com/support.html',
+                            false,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -158,21 +180,99 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
     );
   }
 
-  Widget _footerLink(BuildContext context, String label, String url, bool whiteBg) {
-    return InkWell(
-      onTap: () {
-        _tap();
-        Navigator.of(context).pushNamed(
-          Routes.webview,
-          arguments: WebViewArgs(url: url, title: label, whiteBackground: whiteBg),
-        );
-      },
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: 12,
-          decoration: TextDecoration.underline,
+  void _openLegal(String title, String url, bool whiteBg) {
+    _tap();
+    Navigator.of(context).pushNamed(
+      Routes.webview,
+      arguments: WebViewArgs(url: url, title: title, whiteBackground: whiteBg),
+    );
+  }
+}
+
+/// Compact framed footer button used for Privacy / Support entries.
+/// Content (icon + label) is horizontally centered inside the frame.
+class _FooterButton extends StatefulWidget {
+  final String label;
+  final IconData icon;
+  final Color accent;
+  final VoidCallback onPressed;
+
+  const _FooterButton({
+    required this.label,
+    required this.icon,
+    required this.accent,
+    required this.onPressed,
+  });
+
+  @override
+  State<_FooterButton> createState() => _FooterButtonState();
+}
+
+class _FooterButtonState extends State<_FooterButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = widget.accent;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      onTap: widget.onPressed,
+      child: AnimatedScale(
+        scale: _pressed ? 0.96 : 1.0,
+        duration: const Duration(milliseconds: 90),
+        curve: Curves.easeOut,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.panelLight.withValues(alpha: _pressed ? 0.65 : 0.9),
+                AppColors.panel.withValues(alpha: 0.85),
+              ],
+            ),
+            border: Border.all(
+              color: accent.withValues(alpha: _pressed ? 0.35 : 0.55),
+              width: 1.2,
+            ),
+            boxShadow: _pressed
+                ? const []
+                : [
+                    BoxShadow(
+                      color: accent.withValues(alpha: 0.18),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Icon(widget.icon, size: 15, color: accent),
+              const SizedBox(width: 7),
+              Flexible(
+                child: Text(
+                  widget.label,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -328,7 +428,7 @@ class _MenuTileState extends State<_MenuTile> {
         curve: Curves.easeOut,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 120),
-          padding: const EdgeInsets.fromLTRB(14, 14, 12, 14),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             gradient: LinearGradient(
@@ -345,7 +445,7 @@ class _MenuTileState extends State<_MenuTile> {
                 : [BoxShadow(color: accent.withValues(alpha: 0.14), blurRadius: 16, offset: const Offset(0, 6))],
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
@@ -365,6 +465,7 @@ class _MenuTileState extends State<_MenuTile> {
               const SizedBox(height: 12),
               Text(
                 widget.label,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w800,
@@ -375,6 +476,7 @@ class _MenuTileState extends State<_MenuTile> {
               const SizedBox(height: 2),
               Text(
                 widget.subtitle,
+                textAlign: TextAlign.center,
                 style: const TextStyle(color: AppColors.textSecondary, fontSize: 11.5, fontWeight: FontWeight.w500),
               ),
             ],
