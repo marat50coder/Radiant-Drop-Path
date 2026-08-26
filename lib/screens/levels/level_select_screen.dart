@@ -29,7 +29,11 @@ class LevelSelectScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(AssetPaths.chapterBackground(2), fit: BoxFit.cover),
+          Image.asset(
+            AssetPaths.chapterBackground(2),
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.high,
+          ),
           Container(color: Colors.black.withValues(alpha: 0.6)),
           ListView.builder(
             padding: const EdgeInsets.all(16),

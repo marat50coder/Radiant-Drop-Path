@@ -365,7 +365,11 @@ class LevelPlayViewState extends State<LevelPlayView> with TickerProviderStateMi
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(AssetPaths.chapterBackground(level.backgroundIndex), fit: BoxFit.cover),
+              Image.asset(
+                AssetPaths.chapterBackground(level.backgroundIndex),
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.high,
+              ),
               Container(color: Colors.black.withValues(alpha: 0.55)),
               Center(
                 child: InteractiveViewer(

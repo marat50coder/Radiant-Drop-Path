@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../utils/asset_paths.dart';
 import 'core/flux_models.dart';
 import 'flow_conductor.dart';
 import 'infra/trace_signals.dart' show fluxTrace;
@@ -185,9 +186,8 @@ class _LaunchGateScreenState extends State<LaunchGateScreen> {
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
     final isLandscape = orientation == Orientation.landscape;
-    final asset = isLandscape
-        ? 'assets/circuit_bootup_landscape.png'
-        : 'assets/circuit_bootup_portrait.png';
+    final asset =
+        isLandscape ? AssetPaths.horizontalLoading : AssetPaths.verticalLoading;
     final screenW = MediaQuery.of(context).size.width;
 
     return Scaffold(

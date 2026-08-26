@@ -141,15 +141,30 @@ class FlowConductor {
     final cached = await vault.savedUrl();
 
     if (!await probe.canReachNetwork()) {
-      if (cached != null && cached.isNotEmpty) return PortalTarget(cached);
+      if (cached != null && cached.isNotEmpty) {
+        fluxTrace(
+          () => '[RDX.FLOW] returningPortal: offline network → cached=$cached',
+        );
+        return PortalTarget(cached);
+      }
       return const OfflineTarget(returnToNative: false);
     }
     progress(0.62);
     await attribution.awaitSignals(installTimeout: const Duration(seconds: 5));
     final reply = await _requestConfig();
     progress(1);
-    if (reply.hasDestination) return PortalTarget(reply.url!);
-    if (cached != null && cached.isNotEmpty) return PortalTarget(cached);
+    if (reply.hasDestination) {
+      fluxTrace(
+        () => '[RDX.FLOW] returningPortal: backend url=${reply.url}',
+      );
+      return PortalTarget(reply.url!);
+    }
+    if (cached != null && cached.isNotEmpty) {
+      fluxTrace(
+        () => '[RDX.FLOW] returningPortal: no backend url → cached=$cached',
+      );
+      return PortalTarget(cached);
+    }
     return const OfflineTarget(returnToNative: false);
   }
 

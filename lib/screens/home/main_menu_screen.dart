@@ -39,7 +39,11 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(AssetPaths.chapterBackground(1), fit: BoxFit.cover),
+          Image.asset(
+            AssetPaths.chapterBackground(1),
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.high,
+          ),
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -87,7 +91,11 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                                 BoxShadow(color: AppColors.accentCyan.withValues(alpha: 0.35), blurRadius: 50, spreadRadius: 4),
                               ],
                             ),
-                            child: Image.asset(AssetPaths.gameLogo, width: 260),
+                            child: Image.asset(
+                              AssetPaths.gameLogo,
+                              width: 260,
+                              filterQuality: FilterQuality.high,
+                            ),
                           ),
                           const SizedBox(height: 12),
                           Text(

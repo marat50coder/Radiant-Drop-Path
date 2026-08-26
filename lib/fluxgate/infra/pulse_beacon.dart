@@ -31,9 +31,20 @@ class PulseBeacon {
     if (!enabled) return;
     final messaging = FirebaseMessaging.instance;
     _messaging = messaging;
+    // getInitialMessage() returns the RemoteMessage that launched the app
+    // via a push tap (or null). On a cold-start with a slow / large Firebase
+    // bootstrap it can take a few seconds to resolve, so we give it a
+    // generous window before falling through — losing this call is the
+    // single biggest source of "opened the wrong URL" reports because the
+    // routing then leans on the cached URL from the previous session.
     final initial = await messaging.getInitialMessage().timeout(
-      const Duration(seconds: 4),
-      onTimeout: () => null,
+      const Duration(seconds: 8),
+      onTimeout: () {
+        fluxTrace(
+          () => '[RDX.PUSH] getInitialMessage timed out (8s) — likely no tap',
+        );
+        return null;
+      },
     );
     final initialUrl = initial == null ? null : _extract(initial.data);
     if (initial != null) {

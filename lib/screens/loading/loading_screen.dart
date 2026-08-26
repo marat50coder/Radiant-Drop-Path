@@ -97,7 +97,12 @@ class _LoadingScreenState extends State<LoadingScreen> with SingleTickerProvider
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(bgAsset, fit: BoxFit.cover),
+          Image.asset(
+            bgAsset,
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.high,
+            gaplessPlayback: true,
+          ),
           Positioned(
             left: 0,
             right: 0,
