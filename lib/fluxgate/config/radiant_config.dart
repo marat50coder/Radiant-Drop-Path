@@ -16,7 +16,10 @@ abstract final class RadiantConfig {
   /// iOS App Store numeric id (used for GCD lookup + store_id).
   static const String iosStoreId = '6792810383';
 
-  static const int pushSnoozeSeconds = 259200; // 3 days
+  // 2 days 22 hours = 70 h × 3600 = 252 000 s. Slightly under a full 3-day
+  // window so that a "3 days later" launch reliably clears the snooze even
+  // when the wall clock has drifted a couple of minutes since the skip.
+  static const int pushSnoozeSeconds = 252000;
   static const int organicRecheckSeconds = 6;
 
   /// DEBUG ONLY — force the gray path by injecting `af_status=Non-organic`
